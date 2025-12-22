@@ -64,6 +64,14 @@ namespace health.api.Data
                 .HasForeignKey(s => s.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // 🔸 SideEffect – Medication (n–1) - Optional relationship
+            // İlaç silinirse Yan Etki kaydı silinmesin, sadece MedicationId null olsun
+            modelBuilder.Entity<SideEffect>()
+                .HasOne(s => s.Medication)
+                .WithMany()
+                .HasForeignKey(s => s.MedicationId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // 🔸 Message tablo ilişkileri
             modelBuilder.Entity<Message>()
                 .HasOne<User>()

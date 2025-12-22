@@ -23,8 +23,34 @@ namespace health.api.Controllers
             if (medication == null)
                 return BadRequest("Eksik veri.");
 
+            // İlaç kaydını ekle
             _db.Medications.Add(medication);
             await _db.SaveChangesAsync();
+
+            // FrequencyPerDay'e göre otomatik DoseSchedule oluştur
+            if (medication.FrequencyPerDay > 0)
+            {
+                var schedules = new List<MedicationDoseSchedule>();
+                var hoursInterval = 24 / medication.FrequencyPerDay;
+
+                for (int i = 0; i < medication.FrequencyPerDay; i++)
+                {
+                    var scheduleTime = new TimeSpan(i * hoursInterval, 0, 0);
+                    // ScheduledTime DateTime tipinde, bu yüzden bugünün tarihine saati ekliyoruz
+                    // Modelde sadece saat tutulması daha iyi olabilirdi ama şimdilik DateTime istiyor
+                    var dateTime = DateTime.Today.Add(scheduleTime);
+                    
+                    schedules.Add(new MedicationDoseSchedule
+                    {
+                        MedicationId = medication.Id,
+                        ScheduledTime = dateTime
+                    });
+                }
+
+                _db.MedicationDoseSchedules.AddRange(schedules);
+                await _db.SaveChangesAsync();
+            }
+
             return Ok(medication);
         }
 
