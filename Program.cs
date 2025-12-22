@@ -100,6 +100,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Seed database with demo data
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        DbSeeder.SeedDatabase(context);
+    }
 }
 
 app.UseHttpsRedirection();
